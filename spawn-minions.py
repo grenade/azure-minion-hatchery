@@ -1,6 +1,7 @@
 import secrets
 import string
 import uuid
+import yaml
 from azure.common.client_factory import get_client_from_cli_profile
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.compute import ComputeManagementClient
@@ -154,19 +155,17 @@ def spawnMinion (instanceId, locationName, resourceGroupName, imageId, virtualNe
   virtualMachineCreateOrUpdate.wait()
 
 
-#spawnHive (
-#  locationNames = ['centralus', 'eastus', 'eastus2', 'westus', 'westus2'],
-#  resourceGroupNames = ['fxci-gecko-1', 'fxci-gecko-3', 'fxci-gecko-3'],
-#  virtualNetworkNames = ['default'],
-#  subnetNames = ['default'],
-#  firewallIpWhitelist = ['185.189.196.216'])
 
-spawnMinion(instanceId = str(uuid.uuid4())[-12:],
-  locationName = 'westus',
-  resourceGroupName = 'westus-fxci-gecko-1',
-  imageId = '/subscriptions/dd0d4271-9b26-4c37-a025-1284a43a4385/resourceGroups/rg-west-us-gecko-1/providers/Microsoft.Compute/images/rg-west-us-gecko-1-win2012')
-
-spawnMinion(instanceId = str(uuid.uuid4())[-12:],
-  locationName = 'centralus',
-  resourceGroupName = 'centralus-fxci-gecko-t',
-  imageId = '/subscriptions/dd0d4271-9b26-4c37-a025-1284a43a4385/resourceGroups/rg-central-us-gecko-t/providers/Microsoft.Compute/images/rg-central-us-gecko-t-win10-64')
+with open('hive.yaml', 'r') as stream:
+  hive = yaml.safe_load(stream)
+  spawnHive (
+    locationNames = hive['topology']['region'],
+    resourceGroupNames = hive['topology']['resource-group'],
+    virtualNetworkNames = ['default'], # hive['topology']['virtual-network'],
+    subnetNames = ['default'], # hive['topology']['subnet'],
+    firewallIpWhitelist = ['185.189.196.216']) # hive['topology']['firewall']['source-whitelist'])
+  for minion in hive['minion']:
+    spawnMinion(instanceId = str(uuid.uuid4())[-12:],
+      locationName = minion['location'],
+      resourceGroupName = minion['resource-group'],
+      imageId = minion['image'])

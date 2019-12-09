@@ -1,0 +1,19 @@
+---
+topology:
+  region:
+    - centralus
+    - eastus
+    - eastus2
+    - westus
+    - westus2
+  resource-group:
+    - fxci-gecko-1
+    - fxci-gecko-3
+    - fxci-gecko-t
+  virtual-network:
+    - default
+  subnet:
+    - default
+  firewall:
+    source-whitelist:
+      '185.189.196.216'
