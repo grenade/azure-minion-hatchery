@@ -155,16 +155,15 @@ def spawnMinion (instanceId, locationName, resourceGroupName, imageId, machine, 
   virtualMachineCreateOrUpdate.wait()
 
 
-
 with open('hive.yaml', 'r') as stream:
   hive = yaml.safe_load(stream)
   for minion in hive['minion']:
     spawnHive(
       locationNames = [minion['location']],
       resourceGroupNames = [minion['resource-group']],
-      virtualNetworkNames = ['default'],
-      subnetNames = ['default'],
-      firewallIpWhitelist = ['185.189.196.216']
+      virtualNetworkNames = [minion['virtual-network']],
+      subnetNames = [minion['subnet']],
+      firewallIpWhitelist = minion['firewall-whitelist']
     )
     spawnMinion(
       instanceId = str(uuid.uuid4())[-12:],
