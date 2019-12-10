@@ -98,7 +98,7 @@ def spawnHive (locationNames, resourceGroupNames, virtualNetworkNames, subnetNam
     locationIndex += 1
 
 
-def spawnMinion (instanceId, locationName, resourceGroupName, imageId, virtualNetworkName = 'default', subnetName = 'default'):
+def spawnMinion (instanceId, locationName, resourceGroupName, imageId, machine, virtualNetworkName = 'default', subnetName = 'default'):
   virtualMachineName = 'vm-{}'.format(instanceId)
   print('spawning minion: {} in resource group: {}'.format(virtualMachineName, resourceGroupName))
 
@@ -139,7 +139,7 @@ def spawnMinion (instanceId, locationName, resourceGroupName, imageId, virtualNe
         'admin_password': ''.join(secrets.choice(string.ascii_letters + string.digits) for i in range(12))
       },
       'hardware_profile': {
-        'vm_size': 'Standard_DS1_v2'
+        'vm_size': machine
       },
       'storage_profile': {
         'image_reference': {
@@ -158,14 +158,17 @@ def spawnMinion (instanceId, locationName, resourceGroupName, imageId, virtualNe
 
 with open('hive.yaml', 'r') as stream:
   hive = yaml.safe_load(stream)
-  spawnHive (
-    locationNames = hive['topology']['region'],
-    resourceGroupNames = hive['topology']['resource-group'],
-    virtualNetworkNames = ['default'], # hive['topology']['virtual-network'],
-    subnetNames = ['default'], # hive['topology']['subnet'],
-    firewallIpWhitelist = ['185.189.196.216']) # hive['topology']['firewall']['source-whitelist'])
   for minion in hive['minion']:
-    spawnMinion(instanceId = str(uuid.uuid4())[-12:],
+    spawnHive(
+      locationNames = [minion['location']],
+      resourceGroupNames = [minion['resource-group']],
+      virtualNetworkNames = ['default'],
+      subnetNames = ['default'],
+      firewallIpWhitelist = ['185.189.196.216']
+    )
+    spawnMinion(
+      instanceId = str(uuid.uuid4())[-12:],
       locationName = minion['location'],
       resourceGroupName = minion['resource-group'],
-      imageId = minion['image'])
+      imageId = minion['image'],
+      machine = minion['machine'])
